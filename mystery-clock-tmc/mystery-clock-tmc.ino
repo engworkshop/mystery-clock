@@ -1,5 +1,5 @@
 /*
-	mystery-clock.ino:  TMC Motor Driver for Mystery Clock
+	mystery-clock-tmc.ino:  TMC2208 Motor Driver for Mystery Clock
 
 	Copyright 2024 by John Eng
 
@@ -22,7 +22,7 @@
 	HARDWARE COMPONENTS:
 	Waveshare RP2040 Zero - similar to Raspberry Pi Pico
 	Maxim DS3234 realtime clock
-	Watterott SilentStepStick clone
+	Watterott SilentStepStick clone, based on Trinamic TMC2208
 	Elegoo 28BYJ-48 stepper motor, modified for bipolar operation
 		32 steps per revolution of ungeared motor
 		9:32, 11:22, 9:27, 8:24 = exact 1:64 gear reduction
