@@ -1,5 +1,5 @@
 /*
-	mystery-clock.ino:  ULN Motor Driver for Mystery Clock
+	mystery-clock-uln.ino:  ULN2003 Motor Driver for Mystery Clock
 
 	Copyright 2024 by John Eng
 
