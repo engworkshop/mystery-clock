@@ -8,7 +8,7 @@ There are two versions of the code, depending on which motor driver board is use
 
 ## Custom Clock Driver Board
 **Silent operation with greater timekeeping accuracy.**&nbsp;&nbsp;
-The RP2040 and ULN2003 boards are economical solutions for driving the clock, but this combination has two limitations.  First, when driven by the ULN2003, the motor audibly hums once a minute when the minute hand moves.  Second, the clock is not particularly accurate because it is driven by the RP2040’s internal clock.
+The RP2040 and ULN2003 boards are economical solutions for driving the clock, but this combination has two limitations.  First, when driven by the ULN2003, the motor audibly hums once a minute when the hands move.  Second, the clock is not particularly accurate because it is driven by the RP2040’s internal clock.
 
 The first problem can be solved by replacing the ULN2003 driver with the Trinamic TMC2208 driver chip.  The second problem can be solved by incorporating the extremely accurate Maxim DS3234 real-time clock chip into the circuit design.
 
