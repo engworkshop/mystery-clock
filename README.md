@@ -1,6 +1,6 @@
 # mystery-clock
 
-This repository contains Arduino code for a 3D-printed “Mystery Clock.”  The code is for the [Waveshare RP2040-Zero](https://www.waveshare.com/rp2040-zero.htm) microcontroller board.  See the clock [project on MakerWorld](https://makerworld.com/en/models/764838).
+This repository contains Arduino code for a 3D-printed “Mystery Clock.”  The code is for the [Waveshare RP2040-Zero](https://www.waveshare.com/rp2040-zero.htm) microcontroller board.  See the [clock project on MakerWorld](https://makerworld.com/en/models/764838).
 
 There are two versions of the code, depending on which motor driver board is used for the project.  mystery-clock-uln is for the ULN2003 driver board described in the MakerWorld project.  mystery-clock-tmc is for a custom driver board described below the clock photo.
 
