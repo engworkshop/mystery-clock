@@ -12,4 +12,4 @@ The ULN2003 and RP2040 boards are economical solutions for driving the clock, bu
 
 The first problem can be solved by replacing the ULN2003 driver with the Trinamic TMC2208 driver chip.  The second problem can be solved by incorporating the Maxim DS3234 real-time clock chip into the circuit design.  The DS3234 incorporates temperature compensation to achieve improved accuracy.
 
-See the GitHub repository for [files and full instructions](https://github.com/engworkshop/clock-driver).
+See the [GitHub repository for files and full instructions](https://github.com/engworkshop/clock-driver).
