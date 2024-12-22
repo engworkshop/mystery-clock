@@ -75,6 +75,13 @@
 	release to move the minute hand by one minute.  The clock's minute counter
 	is synchronized to the last button press.
 
+	If a button is pressed during startup, the TMC2208's reference voltage and
+	corresponding motor current will be shown in the Arduino console.  The
+	motor requires about a 220 mA current.  The reference voltage, and thus the
+	motor current, are controlled by a small potentiometer on the
+	SilentStepStick.  Press a button again to stop the console output and
+	resume normal operation.
+
 	To do:
 	implement 2-speed motor switching
 */
