@@ -75,7 +75,7 @@
 	release to move the minute hand by one minute.  The clock's minute counter
 	is synchronized to the last button press.
 
-	to do:
+	To do:
 	implement 2-speed motor switching
 */
 
@@ -102,6 +102,7 @@ const int RTC_CS_PIN   = 5;   // RTC: chip select (-CS)
 const int RTC_INT_PIN  = 6;   // RTC: interrupt output(-INT/SQW)
 const int CW_BTN_PIN   = 12;  // Button for moving hands counterclockwise; connected to GND
 const int CCW_BTN_PIN  = 13;  // Button for moving hands clockwise; connected to GND
+const int VREF_PIN     = 26;  // Motor driver: reference voltage
 
 // Timing constants
 const unsigned long POWER_DELAY     = 300;   // Wait for power up or down (ms)
@@ -123,6 +124,13 @@ int gLastBtnState[N_BUTTONS];                // Last known state (LOW or HIGH) o
 unsigned long gLastBtnTimestamp[N_BUTTONS];  // Last time button was noted to change state
 const int BUTTON_NONE  = -1;                 // "Null" button "pin" returned by button subroutines
 
+// Constants and variables for reading of TMC2208 reference voltage
+const int ADC_BUFFER_SIZE = 200;    // Size of circular buffer for storing ADC readings
+int gAdcReadings[ADC_BUFFER_SIZE];  // Circular buffer for storing ADC readings
+int gReadingsPtr = 0;               // Pointer to position of next ADC reading in circular buffer
+long gReadingsSum = 0;              // Summation of ADC readings for averaging
+
+
 // Table for microstep configuration
 int gMicrostepConfig[][4] = {
 	{8,  LOW,  LOW,  2000},  // microsteps, MSELECT1, MSELECT2, motor step time
@@ -135,8 +143,7 @@ int gMicrostepConfig[][4] = {
 int gMicrosteps;                          // Number of microsteps per full step, initialized in setup()
 unsigned int gMotorStepDelay;             // Delay between microsteps (microseconds), initialized in setup()
 int gMotorDirection;                      // Current motor direction, initialized in setup()
-//int gNextAlarm = 59;                    // Second of the minute to generate alarm interrupt
-int gNextAlarm = 10;
+int gNextAlarm = 59;                    // Second of the minute to generate alarm interrupt
 volatile boolean gMoveMotorFlag = false;  // Set by interrupt service routine to signal need to move motor
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -164,6 +171,16 @@ void setup() {
 	digitalWrite(RTC_CS_PIN,   HIGH);
 	gMotorDirection = DIR_FORWARD;
 	setMicrosteps(8);  // Initialize gMicrosteps, gMotorStepDelay, MSELECT1_PIN, and MSELECT2_PIN
+	// Initialize button state arrays
+	for (int i = 0; i < N_BUTTONS; i++) {
+		gLastBtnState[i] = HIGH;
+		gLastBtnTimestamp[i] = millis();
+		}
+	delay(DEBOUNCE_DELAY*2);  // Debounce delay required before immediate first use!
+	// If a button is pressed at startup, show TMC2208 reference voltage on console
+	if (readButtons() != BUTTON_NONE) {
+		showRefVoltage();  // Returns after a button is pressed again
+		}
 	// Initialize motor position
 	motorPower(true);
 	motorPower(false);
@@ -235,6 +252,57 @@ void handleButton(int btnPin) {
 void handleInterrupt() {
 	clearAlarmFlags();
 	gMoveMotorFlag = true;  // Indicate that motor needs to be moved
+	}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//   SUBROUTINES FOR READING TMC2208 REFERENCE VOLTAGE
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Show TMC2208 reference voltage on console
+void showRefVoltage() {
+	// Initialize serial port
+	Serial.begin();  // USB port requires no baud rate
+	while (!Serial) {}
+	// Initialize buffer of ADC readings
+	for (int i = 0; i < ADC_BUFFER_SIZE; i++) {
+		delay(2);
+		gAdcReadings[i] = analogRead(VREF_PIN);
+		gReadingsSum += long(gAdcReadings[i]);
+		}
+	// Wait until button released
+	while (readButtons() != BUTTON_NONE) {}
+	// Voltage polling loop
+	do {
+		int vref = updateMillivolts(VREF_PIN);
+		float motorCurrent = (325.0*float(vref))/(140.0*sqrt(2.0)*2500.0);  // Formula from TMC2208 data sheet
+		motorCurrent *= 1000.0;
+		Serial.print(vref);
+		Serial.print(" mV   ");
+		Serial.print(int(motorCurrent + 0.5));
+		Serial.println(" mA");
+		}
+	while (readButtons() == BUTTON_NONE);
+	while (readButtons() != BUTTON_NONE) {}
+	}
+
+// Read one ADC value, update running average of voltage
+int updateMillivolts(int adcPin) {
+	// Subtract old reading from summation
+	gReadingsSum -= long(gAdcReadings[gReadingsPtr]);
+	// Store new reading
+	delay(2);
+	gAdcReadings[gReadingsPtr] = analogRead(adcPin);
+	// Add new reading to summation
+	gReadingsSum += gAdcReadings[gReadingsPtr];
+	// Update circular buffer pointer
+	gReadingsPtr++;
+	if (gReadingsPtr >= ADC_BUFFER_SIZE) gReadingsPtr = 0;
+	// Calculate voltage in millivolts
+	float v = float(gReadingsSum)/float(ADC_BUFFER_SIZE);
+	v = 3300.0*v/1024.0;
+	return (int(v + 0.5));
 	}
 
 ///////////////////////////////////////////////////////////////////////////////
